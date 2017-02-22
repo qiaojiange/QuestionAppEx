@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/activity_main"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+<!--头部-->
+    <include layout="@layout/top_layout"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <include layout="@layout/fragment_question"/>
+
+        <!--底端-->
+        <LinearLayout
+            android:id="@+id/tabHost"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:background="@drawable/bg_title_bar"
+            android:orientation="horizontal"
+            android:gravity="bottom"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true">
+
+            <ImageView
+                android:id="@+id/iv_delete"
+                android:layout_width="100dp"
+                android:layout_height="60dp"
+                android:layout_weight="1"
+                android:focusable="false"
+                android:padding="5dp"
+                android:src="@drawable/selector_icon_delete"
+                >
+            </ImageView>
+
+            <ImageView
+                android:id="@+id/iv_collect"
+                android:layout_width="100dp"
+                android:layout_height="60dp"
+                android:layout_weight="1"
+                android:focusable="false"
+                android:padding="5dp"
+                android:src="@drawable/selector_icon_collect"
+                >
+            </ImageView>
+
+            <ImageView
+                android:id="@+id/iv_explain"
+                android:layout_width="100dp"
+                android:layout_height="60dp"
+                android:layout_weight="1"
+                android:focusable="false"
+                android:padding="5dp"
+                android:src="@drawable/selector_icon_explain"
+                >
+            </ImageView>
+        </LinearLayout>
+
+
+    </RelativeLayout>
+
+
+
+</LinearLayout>
