@@ -1,5 +1,6 @@
-package com.example.questionappex;
+package com.example.questionappex.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -8,6 +9,8 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.questionappex.R;
+import com.example.questionappex.SettingActivity;
 import com.example.questionappex.util.DBUtil;
 import com.example.questionappex.model.Question;
 import com.example.questionappex.ui.BaseActivity;
@@ -47,6 +50,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        LogUtil.d(TAG,"---onCreate---");
 
         confirm = (Button) findViewById(R.id.bt_confirm);
         ivReturn = (ImageView)findViewById(R.id.iv_return);
@@ -82,6 +86,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     @Override
     protected void onResume() {
         super.onResume();
+        LogUtil.d(TAG,"---onResume---");
+
         adapter= new ChoiceAdapter(this,R.layout.item_choice);
 
         loadQuestion(currentIndex);
@@ -94,12 +100,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     @Override
     protected void onPause() {
         super.onPause();
+        LogUtil.d(TAG,"---onPause---");
 
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        LogUtil.d(TAG,"---onStop---");
     }
 
 
@@ -174,6 +182,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
 
             case R.id.iv_setting:
                LogUtil.d(TAG,"onClick: setting ------");
+//                开启设置界面
+                Intent intent = new Intent(MainActivity.this, SettingActivity.class);
+                startActivity(intent);
+
                 break;
 
             case R.id.bt_prev_question:

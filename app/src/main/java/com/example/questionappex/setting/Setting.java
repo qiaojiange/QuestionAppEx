@@ -8,4 +8,7 @@ public class Setting {
 //    public static int type1Start
 //    将次参数改为大于5，就不用每次复制数据库文件
     public static final  int  DatabaseVersion = 1;
+    public static final String PATTERN= "pattern";
+    public static final int ORDER_PATTERN = 0;
+    public static final int RANDOM_PATTERN = 1;
 }

@@ -9,6 +9,7 @@ import java.util.List;
 
 public class Question {
 
+    public static final String TYPE="TYPE";
     public static final int TYPE_SINGLE = 1;//单选
     public static final int TYPE_MUTIL = 2;//多选
     public static final int TYPE_CHECKING = 3;//判断
@@ -16,6 +17,7 @@ public class Question {
 //    public static final int TYPE_QA = 5;//简答
 
 
+    public static final String GRADE = "GRADE";
     public static final int GRADE_1 = 1;
     public static final int GRADE_2 = 2;
     public static final int GRADE_3 = 3;

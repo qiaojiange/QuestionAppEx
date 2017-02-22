@@ -4,6 +4,7 @@ import android.support.test.runner.AndroidJUnit4;
 
 import com.example.questionappex.model.Question;
 import com.example.questionappex.util.DBUtil;
+import com.example.questionappex.util.SPUtil;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,17 +32,22 @@ public class ExampleInstrumentedTest {
 
 
 
-        Question question = new Question();
-        question.setCollect(1);
-        question.setError(0);
-        question.setTitleId("000001");
-        question.setHasDo(0);
-        question.setDelete(0);
+//        Question question = new Question();
+//        question.setCollect(1);
+//        question.setError(0);
+//        question.setTitleId("000001");
+//        question.setHasDo(0);
+//        question.setDelete(0);
+//
+//
+//        DBUtil.newInstance().updateQuestion(question);
+//        Question question1 = DBUtil.newInstance().query(1,1,1);
+//        System.out.println(question1);
 
-
-        DBUtil.newInstance().updateQuestion(question);
-        Question question1 = DBUtil.newInstance().query(1,1,1);
-        System.out.println(question1);
+        SPUtil.putBoolean("isRemeber",false);
+        System.out.println(SPUtil.getBoolean("isRemeber",true));
+        SPUtil.putInt("test1",10);
+        System.out.println("test1: "+SPUtil.getInt("test1",4));
 
 
 //        Log.d(TAG, "useAppContext: "+question);
