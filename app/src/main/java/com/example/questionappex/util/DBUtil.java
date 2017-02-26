@@ -2,10 +2,13 @@ package com.example.questionappex.util;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
 import android.widget.Toast;
 
 import com.example.questionappex.model.Choice;
 import com.example.questionappex.model.Question;
+import com.example.questionappex.setting.Setting;
+import com.example.questionappex.setting.Setting.Statistics;
 import com.example.questionappex.ui.MyApplication;
 
 import java.util.ArrayList;
@@ -47,7 +50,6 @@ public class DBUtil {
     }
 
     public Question query(int type, int grade, int id) {
-
         Question question = null;
         //id超出了范围，让用户修改设置
         if(!checkID(type,grade,id)){
@@ -55,8 +57,14 @@ public class DBUtil {
         }
         String strId = getStringId(id);
 
-        question = new Question();
+        question = getQuestion(strId);
+        return question;
+    }
 
+    @NonNull
+    private Question getQuestion(String strId) {
+        Question question;
+        question = new Question();
         Cursor cursor = db.rawQuery("select * from tb_title where f_titleID=?", new String[]{strId});
         if (cursor.moveToFirst()) {
             question.setTitleId(cursor.getString(cursor.getColumnIndex(Question.F_TITLEID)));
@@ -181,6 +189,125 @@ public class DBUtil {
 
     }
 
+
+    /***
+     * 按照Setting界面进行查询
+     * @param id：题目的id
+     * @return: 所有满足setting条件的QuestionId.
+     */
+    public List<String> queryAllTitleID(String id){
+        List<String> list = new ArrayList<>();
+
+        int grade = SPUtil.getInt(Question.GRADE,Question.GRADE_1);
+        int type = SPUtil.getInt(Question.TYPE,Question.TYPE_SINGLE);
+
+        Cursor cursor = db.rawQuery("select f_titleID from tb_title where f_grade=? and f_type=? and f_titleID>?",new String[]{""+grade,""+type,id});
+        int index = cursor.getColumnIndex("f_titleID");
+        if (cursor.moveToFirst()){
+            do{
+                list.add(cursor.getString(index));
+            }while (cursor.moveToNext());
+
+        }
+
+        if(cursor!=null){
+            cursor.close();
+        }
+        return list;
+    }
+
+    public Question query(String id){
+        return getQuestion(id);
+    }
+
+    /***
+     * 获取有统计界面产生的所有的题目的Id
+     * @param statistics:统计信息类型，如：是否删除、是否错题、是否收藏、是否已做
+     * @param type:单选题、多选题、判断题
+     * @return: 根据条件查找出所有题目的id
+     */
+    public List<String> statistics(Setting.Statistics statistics,int type){
+        List<String> list  = new ArrayList<>();
+        StringBuilder sb = new StringBuilder("select f_titleID from tb_title where f_type=");
+        sb.append(type+" and ");
+
+        switch(statistics){
+            case NoDoQuestion:
+                sb.append("f_do=0");
+                break;
+
+            case CollectionQuestion:
+                sb.append("f_collect=1");
+                break;
+
+            case DeleteQuestion:
+                sb.append("f_delete=1");
+                break;
+
+            case ErrorQuestion:
+                sb.append("f_error=1");
+                break;
+
+            case HaveDoQuestion:
+                sb.append("f_do=1");
+                break;
+        }
+
+        Cursor cursor = db.rawQuery(sb.toString(),null);
+        int index = cursor.getColumnIndex("f_titleID");
+
+        if(cursor.moveToFirst()){
+            do{
+                list.add(cursor.getString(index));
+            }while (cursor.moveToNext());
+        }
+        if (cursor!=null){
+            cursor.close();
+        }
+        return list;
+    }
+
+    /***
+     * 获取每种类型的统计信息
+     * @param statistics：统计信息类型
+     * @param type：题目信息类型
+     * @return 不重复的个数
+     */
+
+    public int countEveryStatistic(Statistics statistics,int type){
+        StringBuilder sb = new StringBuilder("select count(distinct f_titleID) as countNum from tb_title where f_type=");
+        sb.append(type+" and ");
+        switch (statistics){
+            case NoDoQuestion:
+                sb.append("f_do=0");
+                break;
+
+            case CollectionQuestion:
+                sb.append("f_collect=1");
+                break;
+
+            case DeleteQuestion:
+                sb.append("f_delete=1");
+                break;
+
+            case ErrorQuestion:
+                sb.append("f_error=1");
+                break;
+
+            case HaveDoQuestion:
+                sb.append("f_do=1");
+                break;
+        }
+        int countNum = 0;
+        Cursor cursor = db.rawQuery(sb.toString(),null);
+        if (cursor.moveToFirst()){
+            countNum = cursor.getInt(cursor.getColumnIndex("countNum"));
+        }
+        if (null != cursor){
+            cursor.close();
+        }
+        return countNum;
+    }
 
 
 }
