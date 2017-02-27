@@ -11,11 +11,13 @@ import android.widget.TextView;
 
 import com.example.questionappex.R;
 import com.example.questionappex.SettingActivity;
+import com.example.questionappex.setting.Setting;
 import com.example.questionappex.util.DBUtil;
 import com.example.questionappex.model.Question;
 import com.example.questionappex.ui.BaseActivity;
 import com.example.questionappex.ui.ChoiceAdapter;
 import com.example.questionappex.util.LogUtil;
+import com.example.questionappex.util.SPUtil;
 
 public class MainActivity extends BaseActivity implements View.OnClickListener{
 
@@ -42,7 +44,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
 
 
 //    保存当前题目索引
-    private int currentIndex;
+    private String currentIndex;
 
     private ListView listView;
     ChoiceAdapter adapter;
@@ -79,7 +81,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         listView = (ListView)findViewById(R.id.lv_select_area);
 
         //先写成为1；
-        currentIndex = 1;
+        currentIndex = SPUtil.getString(Setting.CurrentIndex,"000001");
+
+        adapter= new ChoiceAdapter(this,R.layout.item_choice);
+        loadQuestion();
+        listView.setAdapter(adapter);
+
 
     }
 
@@ -87,11 +94,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     protected void onResume() {
         super.onResume();
         LogUtil.d(TAG,"---onResume---");
-
-        adapter= new ChoiceAdapter(this,R.layout.item_choice);
-
-        loadQuestion(currentIndex);
-        listView.setAdapter(adapter);
 
 
 
@@ -107,6 +109,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     @Override
     protected void onStop() {
         super.onStop();
+        SPUtil.putString(Setting.CurrentIndex,this.currentIndex);
         LogUtil.d(TAG,"---onStop---");
     }
 
@@ -116,11 +119,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
     }
 
+    private QuestionPool pool = null;
     //加载题目
-    private boolean loadQuestion(int id) {
+    private boolean loadQuestion() {
 //        SharedPreferences sharedPreferences =  getSharedPreferences("Config",MODE_PRIVATE);
 //        boolean isConfig = sharedPreferences.getBoolean("isConfig",false);
 
@@ -129,19 +132,41 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
 //        int id = sharedPreferences.getInt("currentIndex",1);
 //        this.question = DBUtil.query(type,grade,id);
 
-        Question newQuestion = DBUtil.newInstance().query(1,1,id);
-        if(newQuestion!=null){
-            this.question = newQuestion;
-        }else{
-            return false;
+        if(pool==null){
+            pool = new QuestionPool();
         }
-        initShowQuestion();
-        adapter.setQuestion(question);
-        adapter.notifyDataSetChanged();
+        pool.loadQuestion("");
+
+        Question newQuestion = pool.next();
+
+        if (updataQuestion(newQuestion)) return false;
         return true;
     }
 
-//    初始化问题的所有信息，包括是否删除，是否收藏
+
+
+//  更新问题
+    private boolean updataQuestion(Question newQuestion) {
+        //保存该问题的选项
+//        saveQuestion();
+        if(newQuestion!=null){
+            this.question = newQuestion;
+        }else{
+            return true;
+        }
+        initShowQuestion();
+        adapter.setQuestion(question);
+        this.currentIndex = question.getTitleId();
+//        adapter.notifyDataSetChanged();
+        return false;
+    }
+
+    private void saveQuestion() {
+        DBUtil.newInstance().updateQuestion(this.question);
+    }
+
+
+    //    初始化问题的所有信息，包括是否删除，是否收藏
     private void initShowQuestion() {
         switch (this.question.getType()){
             case Question.TYPE_SINGLE:
@@ -173,6 +198,33 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
 
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode){
+            case requestionSettingActivity:
+                if (resultCode == RESULT_OK){
+                    String returnData = data.getStringExtra("data_return");
+//                    在这里可以从setting界面进行返回，如果做了修改就要重新加载，没有做修改就不用加载
+                    LogUtil.d(TAG,"----returnedData:"+returnData);
+                    if(returnData.equals("SettingActivity:true")){
+//                      重新加载问题数据
+                        loadQuestion();
+
+                    }else if(returnData.equals("SettingActivity:false")){
+//                        不用加载问题数据，除非到最后一个题，就做修改
+
+
+
+                    }
+
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    private static final int requestionSettingActivity = 1;
+    @Override
     public void onClick(View v) {
         switch (v.getId()){
 
@@ -184,16 +236,18 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
                LogUtil.d(TAG,"onClick: setting ------");
 //                开启设置界面
                 Intent intent = new Intent(MainActivity.this, SettingActivity.class);
-                startActivity(intent);
-
+//                startActivity(intent);
+                startActivityForResult(intent,requestionSettingActivity);
                 break;
 
             case R.id.bt_prev_question:
                 LogUtil.d(TAG,"onClick: bt_prev_question ------");
-                int prevIndex = currentIndex-1;
-                if(loadQuestion(prevIndex)){
-                    currentIndex = prevIndex;
-                }
+//                int prevIndex = currentIndex-1;
+//                if(loadQuestion(prevIndex)){
+//                    currentIndex = prevIndex;
+//                }
+                saveQuestion();
+                updataQuestion(pool.prev());
                 break;
             case R.id.bt_confirm:
                 LogUtil.d(TAG, "onClick: confirm------");
@@ -202,10 +256,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
 
             case R.id.bt_next_question:
                 LogUtil.d(TAG,"onClick: bt_next_question ------");
-                int nextIndex = currentIndex+1;
-                if(loadQuestion(nextIndex)){
-                    currentIndex = nextIndex;
-                }
+//                int nextIndex = currentIndex+1;
+//                if(loadQuestion(nextIndex)){
+//                    currentIndex = nextIndex;
+//                }
+
+                saveQuestion();
+                updataQuestion(pool.next());
                 break;
 
             case R.id.iv_delete:
@@ -217,7 +274,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
                     this.question.setDelete(0);
                 }
                 //更新数据库
-                DBUtil.newInstance().updateQuestion(question);
+                saveQuestion();
                 break;
             case R.id.iv_collect:
                 LogUtil.d(TAG,"onClick: collect---------");
@@ -228,7 +285,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
                     this.question.setCollect(0);
                 }
                 //更新数据库
-                DBUtil.newInstance().updateQuestion(question);
+                saveQuestion();
                 break;
             case R.id.iv_explain:
                 LogUtil.d(TAG,"onClick: iv_explain ------");
@@ -246,7 +303,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         }else{
             llExplain.setVisibility(View.INVISIBLE);
         }
-
     }
 
 

@@ -267,6 +267,8 @@ public class DBUtil {
         return list;
     }
 
+
+
     /***
      * 获取每种类型的统计信息
      * @param statistics：统计信息类型

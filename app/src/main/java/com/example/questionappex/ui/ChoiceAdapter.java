@@ -2,6 +2,7 @@ package com.example.questionappex.ui;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.nfc.Tag;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,19 +59,19 @@ public class ChoiceAdapter extends ArrayAdapter<Choice> {
 
     @Override
     public int getCount() {
-        LogUtil.d(TAG, "--------getCount---");
+//        LogUtil.d(TAG, "--------getCount---");
         return mChoiceList.size();
     }
 
     @Override
     public Choice getItem(int position) {
-        LogUtil.d(TAG, "----getItem-----");
+//        LogUtil.d(TAG, "----getItem-----");
         return mChoiceList.get(position);
     }
 
     @Override
     public long getItemId(int position) {
-        LogUtil.d(TAG, "----getItemId-----");
+//        LogUtil.d(TAG, "----getItemId-----");
         return position;
     }
 
@@ -87,12 +88,14 @@ public class ChoiceAdapter extends ArrayAdapter<Choice> {
             viewHolder.choice = (CheckBox) view.findViewById(R.id.cb_choice);
             viewHolder.positionTextView = (TextView) view.findViewById(R.id.tv_position);
             viewHolder.convertView = view;
-            viewHolder.position = position;
+//        viewHolder.position = position;
             view.setTag(viewHolder);
         } else {
             view = convertView;
             viewHolder = (ViewHolder) view.getTag();
         }
+
+        viewHolder.position = position;
         viewHolder.positionTextView.setText(choice.getPosition());
 //        viewHolder.choice.setChecked();
         viewHolder.answerTextView.setText(choice.getAnswer());
@@ -101,7 +104,7 @@ public class ChoiceAdapter extends ArrayAdapter<Choice> {
         return view;
     }
 
-    private void processItemBackground(int position, ViewHolder viewHolder) {
+    private void processItemBackground( int position, ViewHolder viewHolder) {
         LogUtil.d(TAG, "----processItemBackground----position:" + position);
         final Choice choice = getItem(position);
         switch (choice.getState()) {
@@ -119,7 +122,7 @@ public class ChoiceAdapter extends ArrayAdapter<Choice> {
         viewHolder.choice.setChecked(choices[position]);
 
 //        将位置放入CheckBox的tag中，之后获取
-        viewHolder.choice.setTag(position);
+//        viewHolder.choice.setTag(position);
 
 //        viewHolder.convertView.setTag(position);
         viewHolder.convertView.setOnClickListener(new View.OnClickListener() {
@@ -127,15 +130,24 @@ public class ChoiceAdapter extends ArrayAdapter<Choice> {
             public void onClick(View v) {
 //                int position = (int)v.getTag();
                 ViewHolder vh = (ViewHolder) v.getTag();
+                boolean isSingle = false;
                 if (Question.TYPE_SINGLE == question.getType() || Question.TYPE_CHECKING == question.getType()) {
                     for (int i = 0; i < choices.length; i++) {
                         choices[i] = false;
                     }
+                    isSingle = true;
                 }
+
+                LogUtil.d("ChoiceAdapter","----vh.position--"+vh.position);
+//                LogUtil.d("ChoiceAdapter","-----setOnClickListener--"+position);
                 int position = vh.position;
                 choices[position] = !choices[position];
                 vh.choice.setChecked(choices[position]);
-                notifyDataSetChanged();
+//                是单选和判断就刷新，保证一次只能选一个
+                if (isSingle){
+                    notifyDataSetChanged();
+                }
+
 //                Toast.makeText(MyApplication.getContext(),"converView.setOnClickListener"+position,Toast.LENGTH_SHORT).show();
             }
         });
@@ -161,6 +173,10 @@ public class ChoiceAdapter extends ArrayAdapter<Choice> {
         this.question = question;
         this.mChoiceList = question.getChoices();
         choices = new boolean[this.mChoiceList.size()];
+        if (this.question.getTitleId().equals("000740")){
+            LogUtil.d(TAG,"---debug--==");
+        }
+        LogUtil.d(TAG,"---choices.length---"+choices.length);
         notifyDataSetChanged();
     }
 
@@ -175,6 +191,7 @@ public class ChoiceAdapter extends ArrayAdapter<Choice> {
         for (int i = 0; i < choices.length; i++) {
             if (choices[i] == true) {
                 flag = true;
+                break;
             }
         }
         if (!flag) {
@@ -185,7 +202,7 @@ public class ChoiceAdapter extends ArrayAdapter<Choice> {
 //        修改了这个debug
 //无论单选还是多选都应该显示所有正确答案，之后再判定用户输入
 
-        String result = question.getResult();
+        String result = question.getResult().trim();
 
         for (int i = 0; i < result.length(); i++) {
             char ch = result.charAt(i);
@@ -196,13 +213,13 @@ public class ChoiceAdapter extends ArrayAdapter<Choice> {
             if (choices[i] == true) {
                 char ch = (char) ('A' + i);
 //                sb.append(ch);
-                if (this.question.getResult().indexOf(ch) > -1) {
+                if (result.indexOf(ch) > -1) {
                     this.mChoiceList.get(i).setState(Choice.State.RIGHT);
                 } else {
                     this.mChoiceList.get(i).setState(Choice.State.ERROR);
-                    this.question.setHasDo(1);
                     this.question.setError(1);
                 }
+                this.question.setHasDo(1);
             }
         }
 
@@ -212,7 +229,7 @@ public class ChoiceAdapter extends ArrayAdapter<Choice> {
 
 
     public void setChoices(List<Choice> choices) {
-        LogUtil.d(TAG, "----setChoices----");
+//        LogUtil.d(TAG, "----setChoices----");
         this.mChoiceList = choices;
         notifyDataSetChanged();
     }

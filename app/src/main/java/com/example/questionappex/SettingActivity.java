@@ -1,7 +1,9 @@
 package com.example.questionappex;
 
+import android.content.Intent;
 import android.media.MediaCodec;
 import android.nfc.Tag;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,6 +20,8 @@ import com.example.questionappex.setting.Setting;
 import com.example.questionappex.ui.BaseActivity;
 import com.example.questionappex.util.LogUtil;
 import com.example.questionappex.util.SPUtil;
+
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class SettingActivity extends BaseActivity implements SeekBar.OnSeekBarChangeListener,View.OnClickListener{
 
@@ -36,6 +40,12 @@ public class SettingActivity extends BaseActivity implements SeekBar.OnSeekBarCh
     private static final String TAG = "SettingActivity";
 
     private int grade = 0;
+
+//    原来的等级、题型，答题模式
+    private int oldGrade =0;
+    private int oldType = 0;
+    private int oldParttern = 0;
+
 
     private Button btFinish;
     @Override
@@ -56,8 +66,9 @@ public class SettingActivity extends BaseActivity implements SeekBar.OnSeekBarCh
 
 
 
-//        获取起始的选中状态
+//      获取起始的选中状态
         int type = SPUtil.getInt(Question.TYPE,Question.TYPE_SINGLE);
+        oldType = type;
         LogUtil.d(TAG," get type = "+type);
         switch (type){
             case Question.TYPE_SINGLE:
@@ -102,6 +113,7 @@ public class SettingActivity extends BaseActivity implements SeekBar.OnSeekBarCh
 
 //        获取起始的选中状态
         int partter1 = SPUtil.getInt(Setting.PATTERN,Setting.ORDER_PATTERN);
+        this.oldParttern = partter1;
         switch (partter1){
             case Setting.ORDER_PATTERN:
                 rgPattern.check(R.id.rBtn_order);
@@ -139,6 +151,7 @@ public class SettingActivity extends BaseActivity implements SeekBar.OnSeekBarCh
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        finishSettingAcitivity();
     }
 
 
@@ -187,6 +200,37 @@ public class SettingActivity extends BaseActivity implements SeekBar.OnSeekBarCh
 
     @Override
     public void onClick(View v) {
+        finishSettingAcitivity();
+    }
+
+    private void finishSettingAcitivity() {
+        Intent intent = new Intent();
+//是否改变了设置
+        if(isChangeSetting()){
+            intent.putExtra("data_return","SettingActivity:true");
+        }else{
+            intent.putExtra("data_return","SettingActivity:false");
+        }
+        setResult(RESULT_OK,intent);
         this.finish();
     }
+
+    /***
+     * 是否改变了setting设置
+     * @return：true，改变了，false,没有改变
+     */
+    private boolean isChangeSetting(){
+        if(this.oldParttern != SPUtil.getInt(Setting.PATTERN,Setting.ORDER_PATTERN) ){
+            return true;
+        }
+        if(this.oldType != SPUtil.getInt(Question.TYPE,Question.TYPE_SINGLE)){
+            return true;
+        }
+
+        if(this.oldGrade != SPUtil.getInt(Question.GRADE,Question.GRADE_1)){
+            return true;
+        }
+        return false;
+    }
+
 }
