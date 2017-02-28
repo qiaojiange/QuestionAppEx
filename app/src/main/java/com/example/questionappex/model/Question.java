@@ -18,6 +18,7 @@ public class Question {
 
 
     public static final String GRADE = "GRADE";
+
     public static final int GRADE_1 = 1;
     public static final int GRADE_2 = 2;
     public static final int GRADE_3 = 3;

@@ -5,7 +5,6 @@ import android.widget.Toast;
 import com.example.questionappex.model.Question;
 import com.example.questionappex.setting.Setting;
 import com.example.questionappex.util.DBUtil;
-import com.example.questionappex.util.LogUtil;
 import com.example.questionappex.util.SPUtil;
 
 import java.util.Collections;
@@ -63,6 +62,20 @@ public class QuestionPool {
             Toast.makeText(MyApplication.getContext(), "亲，这是第一题，不能往上翻了", Toast.LENGTH_SHORT).show();
         }
         return null;
+    }
+    public Question first(){
+        int parttern = SPUtil.getInt(Setting.PATTERN, Setting.ORDER_PATTERN);
+        //顺序答题，不用打乱list集合中的数据
+        if (parttern == Setting.ORDER_PATTERN) {
+//          随机答题，打乱list集合中的数据
+        } else if (parttern == Setting.RANDOM_PATTERN) {
+            if (!isFirstShuffle) {
+                //将list中的顺序打乱
+                Collections.shuffle(list);
+                isFirstShuffle = true;
+            }
+        }
+        return DBUtil.newInstance().query(list.get(currIndex));
     }
 
     public Question next() {

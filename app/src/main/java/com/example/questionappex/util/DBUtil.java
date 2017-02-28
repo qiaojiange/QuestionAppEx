@@ -198,7 +198,7 @@ public class DBUtil {
     public List<String> queryAllTitleID(String id){
         List<String> list = new ArrayList<>();
 
-        int grade = SPUtil.getInt(Question.GRADE,Question.GRADE_1);
+        int grade = SPUtil.getInt(Question.GRADE,Question.GRADE_2);
         int type = SPUtil.getInt(Question.TYPE,Question.TYPE_SINGLE);
 
         Cursor cursor = db.rawQuery("select f_titleID from tb_title where f_grade=? and f_type=? and f_titleID>?",new String[]{""+grade,""+type,id});

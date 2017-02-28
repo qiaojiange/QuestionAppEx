@@ -83,6 +83,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         //先写成为1；
         currentIndex = SPUtil.getString(Setting.CurrentIndex,"000001");
 
+//        SPUtil.putInt(Question.GRADE,Question.GRADE_1);
+
         adapter= new ChoiceAdapter(this,R.layout.item_choice);
         loadQuestion();
         listView.setAdapter(adapter);
@@ -137,7 +139,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         }
         pool.loadQuestion("");
 
-        Question newQuestion = pool.next();
+//        Question newQuestion = pool.next();
+        Question newQuestion = pool.first();
 
         if (updataQuestion(newQuestion)) return false;
         return true;

@@ -1,27 +1,19 @@
 package com.example.questionappex;
 
 import android.content.Intent;
-import android.media.MediaCodec;
-import android.nfc.Tag;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.questionappex.model.Question;
 import com.example.questionappex.setting.Setting;
 import com.example.questionappex.ui.BaseActivity;
 import com.example.questionappex.util.LogUtil;
 import com.example.questionappex.util.SPUtil;
-
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class SettingActivity extends BaseActivity implements SeekBar.OnSeekBarChangeListener,View.OnClickListener{
 
@@ -145,7 +137,9 @@ public class SettingActivity extends BaseActivity implements SeekBar.OnSeekBarCh
 
         seekBar.setOnSeekBarChangeListener(this);
 
-        seekBar.setProgress(SPUtil.getInt(Question.GRADE,Question.GRADE_1)-1);
+        this.oldGrade = SPUtil.getInt(Question.GRADE,Question.GRADE_1);
+        LogUtil.d(TAG,"-----oldGrade---"+this.oldGrade);
+        seekBar.setProgress(this.oldGrade-1);
     }
 
     @Override
@@ -157,6 +151,7 @@ public class SettingActivity extends BaseActivity implements SeekBar.OnSeekBarCh
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        LogUtil.d(TAG,"---progress---"+progress);
         switch (progress){
             case 0:
                 grade = Question.GRADE_1;
