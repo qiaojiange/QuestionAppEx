@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <array name="grade">
+        <item>初级</item>
+        <item>中级</item>
+        <item>高级</item>
+        <item>技师</item>
+        <item>高级技师</item>
+    </array>
+
+    <array name="type">
+        <item>单选题</item>
+        <item>多选题</item>
+        <item>判断题</item>
+        <!--<item>识图题</item>-->
+        <!--<item>问答题</item>-->
+    </array>
+
+    <array name="pattern">
+        <item>顺序答题</item>
+        <item>随机答题</item>
+    </array>
+
+</resources>

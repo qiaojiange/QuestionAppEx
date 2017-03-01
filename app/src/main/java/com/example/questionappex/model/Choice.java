@@ -16,7 +16,7 @@ public class Choice {
 
 //  题目ID
     String titleID;
-//    位置
+//  位置
     String position;
     String answer;
     State state=State.NORMAL;

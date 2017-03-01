@@ -1,0 +1,121 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    tools:context="com.daniel.dati.ui.RecordActivity">
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/bg_title_bar">
+        <!--显示类别&#45;&#45;如：我的错题，我的删除，我的收藏-->
+        <Button
+            android:id="@+id/record_bt_back"
+            android:gravity="center"
+            android:background="@drawable/selector_back_arrow_pressed"
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"/>
+
+
+        <TextView
+            android:id="@+id/record_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="排除的题"
+            android:textSize="20sp"
+            android:textColor="#ffffff"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical"
+        android:padding="5dp"
+        >
+
+        <!--显示所有的项-->
+        <RelativeLayout
+            android:id="@+id/record_layout_all"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="#f360e845">
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="25dp"
+                android:id="@+id/imageView"
+                android:background="@drawable/block_icon"
+                android:layout_centerVertical="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginLeft="20dp"
+                android:layout_marginStart="20dp" />
+
+            <!--所有我排除的题-->
+            <TextView
+                android:id="@+id/record_tv_all_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="所有我排除的题"
+                android:textSize="20sp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_alignBottom="@+id/imageView"
+                android:layout_toRightOf="@+id/imageView"
+                android:layout_toEndOf="@+id/imageView" />
+
+            <!--显示个数-->
+            <Button
+                android:id="@+id/record_bt_all_count"
+                android:layout_width="40dp"
+                android:layout_height="25dp"
+                android:background="@drawable/shape_rectange"
+                android:enabled="false"
+                android:text="1"
+                android:gravity="center"
+                android:layout_alignTop="@+id/imageView"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginRight="15dp"
+                android:layout_marginEnd="15dp" />
+
+        </RelativeLayout>
+
+        <!--分类列出每一项的信息条数-->
+        <ListView
+            android:id="@+id/record_listview"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+
+        </ListView>
+
+        <!--答对后自动移除错题-->
+        <LinearLayout
+            android:id="@+id/record_layout_delete"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+        </LinearLayout>
+
+
+
+        <!--清空我的错题-->
+        <!--清空我的收藏-->
+        <!--恢复排除的题-->
+        <Button
+            android:id="@+id/record_bt_reset"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="恢复排除的题"
+            android:textSize="20sp"
+            android:gravity="center"/>
+
+    </LinearLayout>
+
+
+</LinearLayout>

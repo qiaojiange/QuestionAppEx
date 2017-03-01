@@ -2,7 +2,9 @@ package com.example.questionappex.util;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.nfc.Tag;
 import android.support.annotation.NonNull;
+import android.test.LoaderTestCase;
 import android.widget.Toast;
 
 import com.example.questionappex.model.Choice;
@@ -20,6 +22,8 @@ import java.util.List;
 
 public class DBUtil {
 //    public static SQLiteDatabase db = ;
+    private static final String TAG = "DBUtil";
+
     private SQLiteDatabase db;
     private IDBInfo idbInfo;
 
@@ -312,5 +316,25 @@ public class DBUtil {
     }
 
 
+    public List<String> queryAllTitleID(String statistics, int type) {
+        List<String> list = new ArrayList<>();
+        StringBuilder sb = new StringBuilder("select * from tb_title where f_type=");
+        sb.append(type);
+        sb.append(" and "+statistics);
+
+        LogUtil.d(TAG,"---queryAllTitleID---"+sb.toString());
+        Cursor cursor = db.rawQuery(sb.toString(),null);
+        int index = cursor.getColumnIndex("f_titleID");
+        if (cursor.moveToFirst()){
+            do{
+                list.add(cursor.getString(index));
+            }while (cursor.moveToNext());
+        }
+        if(cursor!=null){
+            cursor.close();
+        }
+        return list;
+
+    }
 }
 

@@ -1,4 +1,4 @@
-package com.example.questionappex;
+package com.example.questionappex.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +9,7 @@ import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.example.questionappex.R;
 import com.example.questionappex.model.Question;
 import com.example.questionappex.setting.Setting;
 import com.example.questionappex.ui.BaseActivity;

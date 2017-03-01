@@ -36,7 +36,6 @@ public class QuestionPool {
         }
         list = DBUtil.newInstance().queryAllTitleID(strId);
         currIndex = 0;
-
     }
 
 
@@ -101,4 +100,10 @@ public class QuestionPool {
         return null;
     }
 
+    public void loadQuestion(String statistics, int type) {
+//        StringBuilder sb = new StringBuilder("select * from tb_title where f_type=");
+//        sb.append(type);
+//        sb.append(" and "+statistics);
+        list = DBUtil.newInstance().queryAllTitleID(statistics,type);
+    }
 }

@@ -1,6 +1,7 @@
 package com.example.questionappex.ui;
 
 import android.content.Intent;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -10,19 +11,17 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.questionappex.R;
-import com.example.questionappex.SettingActivity;
+import com.example.questionappex.RecordActivity;
 import com.example.questionappex.setting.Setting;
 import com.example.questionappex.util.DBUtil;
 import com.example.questionappex.model.Question;
-import com.example.questionappex.ui.BaseActivity;
-import com.example.questionappex.ui.ChoiceAdapter;
 import com.example.questionappex.util.LogUtil;
 import com.example.questionappex.util.SPUtil;
 
-public class MainActivity extends BaseActivity implements View.OnClickListener{
+public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     private static final String TAG = "MainActivity";
-//    1.设置标题
+    //    1.设置标题
 //    2.加载问题和选项
 //    3.判断结果
 //    4.更新结果
@@ -39,34 +38,34 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     //标题，表示是单选题，多选题，还是判断题
     private TextView ivMain;
 
-//    显示解释
+    //    显示解释
     private LinearLayout llExplain;
 
 
-//    保存当前题目索引
+    //    保存当前题目索引
     private String currentIndex;
 
     private ListView listView;
     ChoiceAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        LogUtil.d(TAG,"---onCreate---");
+        LogUtil.d(TAG, "---onCreate---");
 
         confirm = (Button) findViewById(R.id.bt_confirm);
-        ivReturn = (ImageView)findViewById(R.id.iv_return);
-        ivSetting = (ImageView)findViewById(R.id.iv_setting);
-        ivDelete = (ImageView)findViewById(R.id.iv_delete);
-        ivCollect = (ImageView)findViewById(R.id.iv_collect);
-        ivExplain = (ImageView)findViewById(R.id.iv_explain);
-        ivMain = (TextView)findViewById(R.id.tv_main);
-        tvTitle = (TextView)findViewById(R.id.tv_title);
-        btPrevQuestion = (Button)findViewById(R.id.bt_prev_question);
-        btNextQuestion = (Button)findViewById(R.id.bt_next_question);
+        ivReturn = (ImageView) findViewById(R.id.iv_return);
+        ivSetting = (ImageView) findViewById(R.id.iv_setting);
+        ivDelete = (ImageView) findViewById(R.id.iv_delete);
+        ivCollect = (ImageView) findViewById(R.id.iv_collect);
+        ivExplain = (ImageView) findViewById(R.id.iv_explain);
+        ivMain = (TextView) findViewById(R.id.tv_main);
+        tvTitle = (TextView) findViewById(R.id.tv_title);
+        btPrevQuestion = (Button) findViewById(R.id.bt_prev_question);
+        btNextQuestion = (Button) findViewById(R.id.bt_next_question);
 
-        llExplain = (LinearLayout)findViewById(R.id.ll_explain);
-
+        llExplain = (LinearLayout) findViewById(R.id.ll_explain);
 
 
         confirm.setOnClickListener(this);
@@ -78,44 +77,91 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         btPrevQuestion.setOnClickListener(this);
         btNextQuestion.setOnClickListener(this);
 
-        listView = (ListView)findViewById(R.id.lv_select_area);
+        listView = (ListView) findViewById(R.id.lv_select_area);
 
         //先写成为1；
-        currentIndex = SPUtil.getString(Setting.CurrentIndex,"000001");
+        currentIndex = SPUtil.getString(Setting.CurrentIndex, "000001");
 
 //        SPUtil.putInt(Question.GRADE,Question.GRADE_1);
 
-        adapter= new ChoiceAdapter(this,R.layout.item_choice);
-        loadQuestion();
+        adapter = new ChoiceAdapter(this, R.layout.item_choice);
+
+
+        Intent intent = this.getIntent();
+        Bundle bundle = intent.getExtras();
+//        如果type==0说明是从顺序或者从设置界面跳转过来的
+        if (bundle == null) {
+            loadQuestion();
+        } else {
+            Setting.Statistics[] statisticses = Setting.Statistics.values();
+            int index = bundle.getInt(RecordActivity.STATISTICS);
+            int type = bundle.getInt(Question.TYPE);
+            LogUtil.d(TAG,"--index--"+index+"--type--"+type);
+
+            Setting.Statistics statistics = statisticses[index];
+            String str = null;
+            switch (statistics) {
+                case CollectionQuestion:
+                    LogUtil.d(TAG," -----case CollectionQuestion------");
+                    str = "f_collect=1";
+                    break;
+                case NoDoQuestion:
+                    str = "f_do=0";
+                    break;
+
+                case DeleteQuestion:
+                    str = "f_delete=1";
+                    break;
+
+                case ErrorQuestion:
+                    str = "f_error=1";
+                    break;
+
+                case HaveDoQuestion:
+                    str="f_do=1";
+                    break;
+                default:
+                    break;
+            }
+            loadQuestion(str,type);
+        }
+//        loadQuestion();
         listView.setAdapter(adapter);
-
-
     }
+    public boolean loadQuestion(String statistics,int type){
+        LogUtil.d(TAG,"---loadQuestion---"+"--statistics--"+statistics+"--type:"+type);
 
+        if (this.pool == null) {
+            this.pool = new QuestionPool();
+        }
+        this.pool.loadQuestion(statistics,type);
+
+//        Question newQuestion = pool.next();
+        Question newQuestion = pool.first();
+
+        if (updataQuestion(newQuestion)) return false;
+        return true;
+    }
     @Override
     protected void onResume() {
         super.onResume();
-        LogUtil.d(TAG,"---onResume---");
-
-
+        LogUtil.d(TAG, "---onResume---");
 
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        LogUtil.d(TAG,"---onPause---");
+        LogUtil.d(TAG, "---onPause---");
 
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        SPUtil.putString(Setting.CurrentIndex,this.currentIndex);
-        LogUtil.d(TAG,"---onStop---");
+        SPUtil.putString(Setting.CurrentIndex, this.currentIndex);
+        LogUtil.d(TAG, "---onStop---");
     }
-
-
 
 
     @Override
@@ -124,6 +170,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     }
 
     private QuestionPool pool = null;
+
     //加载题目
     private boolean loadQuestion() {
 //        SharedPreferences sharedPreferences =  getSharedPreferences("Config",MODE_PRIVATE);
@@ -134,7 +181,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
 //        int id = sharedPreferences.getInt("currentIndex",1);
 //        this.question = DBUtil.query(type,grade,id);
 
-        if(pool==null){
+        if (pool == null) {
             pool = new QuestionPool();
         }
         pool.loadQuestion("");
@@ -147,21 +194,26 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     }
 
 
-
-//  更新问题
+    //  更新问题
     private boolean updataQuestion(Question newQuestion) {
         //保存该问题的选项
 //        saveQuestion();
-        if(newQuestion!=null){
+        if (newQuestion != null) {
             this.question = newQuestion;
-        }else{
+        } else {
             return true;
         }
         initShowQuestion();
         adapter.setQuestion(question);
         this.currentIndex = question.getTitleId();
-//        adapter.notifyDataSetChanged();
+//      adapter.notifyDataSetChanged();
         return false;
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        this.finish();
     }
 
     private void saveQuestion() {
@@ -171,7 +223,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
 
     //    初始化问题的所有信息，包括是否删除，是否收藏
     private void initShowQuestion() {
-        switch (this.question.getType()){
+        switch (this.question.getType()) {
             case Question.TYPE_SINGLE:
                 ivMain.setText("单选题");
                 break;
@@ -184,17 +236,17 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         }
 
 
-        tvTitle.setText(this.question.getTitleId()+"、 "+this.question.getTitle());
-        if(this.question.getCollect()==1){
+        tvTitle.setText(this.question.getTitleId() + "、 " + this.question.getTitle());
+        if (this.question.getCollect() == 1) {
 
             ivCollect.setSelected(true);
-        }else{
+        } else {
             ivCollect.setSelected(false);
         }
 
-        if(this.question.getDelete()==1){
+        if (this.question.getDelete() == 1) {
             ivDelete.setSelected(true);
-        }else{
+        } else {
             ivDelete.setSelected(false);
         }
     }
@@ -202,19 +254,18 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode){
+        switch (requestCode) {
             case requestionSettingActivity:
-                if (resultCode == RESULT_OK){
+                if (resultCode == RESULT_OK) {
                     String returnData = data.getStringExtra("data_return");
 //                    在这里可以从setting界面进行返回，如果做了修改就要重新加载，没有做修改就不用加载
-                    LogUtil.d(TAG,"----returnedData:"+returnData);
-                    if(returnData.equals("SettingActivity:true")){
+                    LogUtil.d(TAG, "----returnedData:" + returnData);
+                    if (returnData.equals("SettingActivity:true")) {
 //                      重新加载问题数据
                         loadQuestion();
 
-                    }else if(returnData.equals("SettingActivity:false")){
+                    } else if (returnData.equals("SettingActivity:false")) {
 //                        不用加载问题数据，除非到最后一个题，就做修改
-
 
 
                     }
@@ -227,24 +278,26 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     }
 
     private static final int requestionSettingActivity = 1;
+
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
 
             case R.id.iv_return:
-                LogUtil.d(TAG,"onClick: return------");
+                LogUtil.d(TAG, "onClick: return------");
+                this.finish();
                 break;
 
             case R.id.iv_setting:
-               LogUtil.d(TAG,"onClick: setting ------");
+                LogUtil.d(TAG, "onClick: setting ------");
 //                开启设置界面
                 Intent intent = new Intent(MainActivity.this, SettingActivity.class);
 //                startActivity(intent);
-                startActivityForResult(intent,requestionSettingActivity);
+                startActivityForResult(intent, requestionSettingActivity);
                 break;
 
             case R.id.bt_prev_question:
-                LogUtil.d(TAG,"onClick: bt_prev_question ------");
+                LogUtil.d(TAG, "onClick: bt_prev_question ------");
 //                int prevIndex = currentIndex-1;
 //                if(loadQuestion(prevIndex)){
 //                    currentIndex = prevIndex;
@@ -258,7 +311,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
                 break;
 
             case R.id.bt_next_question:
-                LogUtil.d(TAG,"onClick: bt_next_question ------");
+                LogUtil.d(TAG, "onClick: bt_next_question ------");
 //                int nextIndex = currentIndex+1;
 //                if(loadQuestion(nextIndex)){
 //                    currentIndex = nextIndex;
@@ -269,29 +322,29 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
                 break;
 
             case R.id.iv_delete:
-                LogUtil.d(TAG,"onClick: delete------");
+                LogUtil.d(TAG, "onClick: delete------");
                 ivDelete.setSelected(!ivDelete.isSelected());
-                if(ivDelete.isSelected()){
+                if (ivDelete.isSelected()) {
                     this.question.setDelete(1);
-                }else{
+                } else {
                     this.question.setDelete(0);
                 }
                 //更新数据库
                 saveQuestion();
                 break;
             case R.id.iv_collect:
-                LogUtil.d(TAG,"onClick: collect---------");
+                LogUtil.d(TAG, "onClick: collect---------");
                 ivCollect.setSelected(!ivCollect.isSelected());
-                if(ivCollect.isSelected()){
+                if (ivCollect.isSelected()) {
                     this.question.setCollect(1);
-                }else{
+                } else {
                     this.question.setCollect(0);
                 }
                 //更新数据库
                 saveQuestion();
                 break;
             case R.id.iv_explain:
-                LogUtil.d(TAG,"onClick: iv_explain ------");
+                LogUtil.d(TAG, "onClick: iv_explain ------");
                 ivExplain.setSelected(!ivExplain.isSelected());
                 showExplain(ivExplain.isSelected());
                 break;
@@ -299,11 +352,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     }
 
 
-
     private void showExplain(boolean selected) {
-        if(selected){
+        if (selected) {
             llExplain.setVisibility(View.VISIBLE);
-        }else{
+        } else {
             llExplain.setVisibility(View.INVISIBLE);
         }
     }
