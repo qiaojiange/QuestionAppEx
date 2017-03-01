@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.example.questionappex.R;
 import com.example.questionappex.model.Choice;
 import com.example.questionappex.model.Question;
+import com.example.questionappex.util.DBUtil;
 import com.example.questionappex.util.LogUtil;
 
 import java.util.List;
@@ -222,7 +223,7 @@ public class ChoiceAdapter extends ArrayAdapter<Choice> {
                 this.question.setHasDo(1);
             }
         }
-
+        DBUtil.newInstance().updateQuestion(this.question);
         //刷新界面
         notifyDataSetChanged();
     }

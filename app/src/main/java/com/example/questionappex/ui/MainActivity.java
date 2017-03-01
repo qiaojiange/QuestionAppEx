@@ -89,7 +89,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
         Intent intent = this.getIntent();
         Bundle bundle = intent.getExtras();
-//        如果type==0说明是从顺序或者从设置界面跳转过来的
+//        如果bundle==null 说明是从顺序或者从设置界面跳转过来的
         if (bundle == null) {
             loadQuestion();
         } else {
@@ -124,6 +124,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                     break;
             }
             loadQuestion(str,type);
+            ivSetting.setVisibility(View.INVISIBLE);
         }
 //        loadQuestion();
         listView.setAdapter(adapter);

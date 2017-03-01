@@ -171,9 +171,13 @@ public class DBUtil {
         if(id>=firstID && id<=lastID){
             return true;
         }else if(id<firstID){
-            Toast.makeText(MyApplication.getContext(),"这是第一道题，前面已经没有了!!!",Toast.LENGTH_SHORT).toString();
+//            Toast.makeText(MyApplication.getContext(),"这是第一道题，前面已经没有了!!!",Toast.LENGTH_SHORT).toString();
+
+            ToastUtil.showToast(MyApplication.getContext(),"这是第一道题，前面已经没有了!!!");
         }else if(id>lastID){
-            Toast.makeText(MyApplication.getContext(),"亲，这是最后一道题了，后面已经没有了!!!",Toast.LENGTH_SHORT).toString();
+//            Toast.makeText(MyApplication.getContext(),"亲，这是最后一道题了，后面已经没有了!!!",Toast.LENGTH_SHORT).toString();
+
+            ToastUtil.showToast(MyApplication.getContext(),"亲，这是最后一道题了，后面已经没有了!!!");
         }
         return false;
     }
@@ -336,5 +340,20 @@ public class DBUtil {
         return list;
 
     }
+
+
+
+    public void reset(String str,String limit) {
+        StringBuilder sb = new StringBuilder("update tb_title set ");
+//        update tb_title set f_do=0 where f_do=1;
+
+        sb.append(str);
+        sb.append(" where ");
+        sb.append(limit+";");
+
+        LogUtil.d(TAG,"----"+sb.toString());
+        db.execSQL(sb.toString());
+    }
+
 }
 

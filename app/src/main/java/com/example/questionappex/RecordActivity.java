@@ -22,12 +22,15 @@ import com.example.questionappex.ui.ChoiceAdapter;
 import com.example.questionappex.ui.MainActivity;
 import com.example.questionappex.util.DBUtil;
 import com.example.questionappex.util.LogUtil;
+import com.example.questionappex.util.ToastUtil;
+
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.Inflater;
 
-public class RecordActivity extends BaseActivity implements View.OnClickListener,AdapterView.OnItemClickListener{
+
+public class RecordActivity extends BaseActivity implements View.OnClickListener, AdapterView.OnItemClickListener {
     private ListView listView;
     private TextView recordTitle;
     private Button recordReset;//重置按钮
@@ -38,13 +41,15 @@ public class RecordActivity extends BaseActivity implements View.OnClickListener
     //    记录布局
     private RelativeLayout recordLayoutAll;
 
-//    统计每种类型的错题
+    //    统计每种类型的错题
     private int[] count = new int[3];
 
-    public static final String TORECORDACTIVITY="record";
+    public static final String TORECORDACTIVITY = "record";
 
     private static final String TAG = "RecordActivity";
 
+    //    设置当前题目分类
+    private Setting.Statistics statistics;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +60,8 @@ public class RecordActivity extends BaseActivity implements View.OnClickListener
         recordTitle = (TextView) findViewById(R.id.record_title);
         //重置按钮
         recordReset = (Button) findViewById(R.id.record_bt_reset);
+        recordReset.setOnClickListener(this);
+
         //加载资源
         listView = (ListView) findViewById(R.id.record_listview);
 
@@ -71,7 +78,7 @@ public class RecordActivity extends BaseActivity implements View.OnClickListener
 //        loadStatisticData();
         initSurface();
 
-        MyAdapter adapter = new MyAdapter(getDataResourse(getResources().getStringArray(R.array.type),count));
+        MyAdapter adapter = new MyAdapter(getDataResourse(getResources().getStringArray(R.array.type), count));
         listView.setAdapter(adapter);
 
         listView.setOnItemClickListener(this);
@@ -85,10 +92,44 @@ public class RecordActivity extends BaseActivity implements View.OnClickListener
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        String str = "";
+        switch (v.getId()) {
             case R.id.record_bt_back:
                 this.finish();
-            break;
+                break;
+//            清空，并且把所有数值都恢复成0
+            case R.id.record_bt_reset:
+                LogUtil.d(TAG,"--点击了清空按钮--");
+                String limit = "";
+                switch (this.statistics) {
+                    case ErrorQuestion:
+                        limit = "f_error=1";
+                        str = "f_error=0";
+                        break;
+                    case HaveDoQuestion:
+                        str = "f_do=0";
+                        limit="f_do=1";
+                        break;
+                    case DeleteQuestion:
+                        str="f_delete=0";
+                        limit="f_delete=1";
+                        break;
+
+
+                    case CollectionQuestion:
+                        str = "f_collect=0";
+                        limit = "f_collect=1";
+                        break;
+                    default:
+                        break;
+                }
+                DBUtil.newInstance().reset(str,limit);
+//                更新UI
+//                RecordActivity.this.finish();
+                initSurface();
+                MyAdapter adapter = new MyAdapter(getDataResourse(getResources().getStringArray(R.array.type),count));
+                listView.setAdapter(adapter);
+                break;
             default:
                 break;
         }
@@ -96,48 +137,67 @@ public class RecordActivity extends BaseActivity implements View.OnClickListener
     }
 
 
-    public static final String STATISTICS="statistics";
+    public static final String STATISTICS = "statistics";
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        LogUtil.d(TAG,"---onItemClick---");
+        LogUtil.d(TAG, "---onItemClick---");
         int type = 0;
-        Intent intent =null;
-        switch (position+1){
+        Intent intent = null;
+        Bundle bundle = null;
+        switch (position + 1) {
             case Question.TYPE_SINGLE:
-                if(count[0]==0){
-                    Toast.makeText(RecordActivity.this,"单选题为0个，请重新选择!!!",Toast.LENGTH_SHORT).show();
+                if (count[0] == 0) {
+//                    Toast.makeText(RecordActivity.this,"单选题为0个，请重新选择!!!",Toast.LENGTH_SHORT).show();
+                    ToastUtil.showToast(RecordActivity.this, "单选题为0个，请重新选择!!!");
                     return;
                 }
                 intent = new Intent(RecordActivity.this, MainActivity.class);
 //                intent.putExtra(Question.TYPE,Question.TYPE_SINGLE);
+                bundle = new Bundle();
+                bundle.putInt(STATISTICS, this.statistics.ordinal());
+                bundle.putInt(Question.TYPE, Question.TYPE_SINGLE);
+                LogUtil.d(TAG, "---Question.TYPE_MUTIL---" + this.statistics.ordinal());
+                intent.putExtras(bundle);
+
                 break;
 
 //            测试下多选题
             case Question.TYPE_MUTIL:
-                if(count[1]==0){
-                    Toast.makeText(RecordActivity.this,"多选题为0个，请重新选择!!!",Toast.LENGTH_SHORT).show();
+                if (count[1] == 0) {
+//                    Toast.makeText(RecordActivity.this,"多选题为0个，请重新选择!!!",Toast.LENGTH_SHORT).show();
+                    ToastUtil.showToast(RecordActivity.this, "多选题为0个，请重新选择!!!");
                     return;
                 }
 
                 intent = new Intent(RecordActivity.this, MainActivity.class);
 //                intent.putExtra(Question.TYPE,Question.TYPE_MUTIL);
-                Bundle bundle = new Bundle();
-                bundle.putInt(STATISTICS,this.statistics.ordinal());
-                bundle.putInt(Question.TYPE,Question.TYPE_MUTIL);
-                LogUtil.d(TAG,"---Question.TYPE_MUTIL---"+this.statistics.ordinal());
+                bundle = new Bundle();
+                bundle.putInt(STATISTICS, this.statistics.ordinal());
+                bundle.putInt(Question.TYPE, Question.TYPE_MUTIL);
+                LogUtil.d(TAG, "---Question.TYPE_MUTIL---" + this.statistics.ordinal());
                 intent.putExtras(bundle);
                 break;
             case Question.TYPE_CHECKING:
+                if (count[2] == 0) {
+//                    Toast.makeText(RecordActivity.this,"多选题为0个，请重新选择!!!",Toast.LENGTH_SHORT).show();
+                    ToastUtil.showToast(RecordActivity.this, "判断题为0个，请重新选择!!!");
+                    return;
+                }
                 intent = new Intent(RecordActivity.this, MainActivity.class);
 //                intent.putExtra(Question.TYPE,Question.TYPE_CHECKING);
+                bundle = new Bundle();
+                bundle.putInt(STATISTICS, this.statistics.ordinal());
+                bundle.putInt(Question.TYPE, Question.TYPE_CHECKING);
+                LogUtil.d(TAG, "---Question.TYPE_MUTIL---" + this.statistics.ordinal());
+                intent.putExtras(bundle);
                 break;
         }
         startActivity(intent);
     }
 
 
-    class MyAdapter extends BaseAdapter{
+    class MyAdapter extends BaseAdapter {
         private List<Item> list;
 
         public MyAdapter(List<Item> list) {
@@ -163,16 +223,16 @@ public class RecordActivity extends BaseActivity implements View.OnClickListener
         public View getView(int position, View convertView, ViewGroup parent) {
             View view;
             ItemViewHold viewHold;
-            if(convertView==null){
-                view = LayoutInflater.from(RecordActivity.this).inflate(R.layout.item_record,parent,false);
+            if (convertView == null) {
+                view = LayoutInflater.from(RecordActivity.this).inflate(R.layout.item_record, parent, false);
                 viewHold = new ItemViewHold();
-                viewHold.id = (Button)view.findViewById(R.id.record_item_id);
-                viewHold.info = (TextView)view.findViewById(R.id.record_item_texview);
-                viewHold.count = (Button)view.findViewById(R.id.record_item_count);
+                viewHold.id = (Button) view.findViewById(R.id.record_item_id);
+                viewHold.info = (TextView) view.findViewById(R.id.record_item_texview);
+                viewHold.count = (Button) view.findViewById(R.id.record_item_count);
                 view.setTag(viewHold);
-            }else{
+            } else {
                 view = convertView;
-                viewHold = (ItemViewHold)view.getTag();
+                viewHold = (ItemViewHold) view.getTag();
             }
             viewHold.id.setText(list.get(position).getId());
             viewHold.count.setText(list.get(position).getCount());
@@ -184,7 +244,7 @@ public class RecordActivity extends BaseActivity implements View.OnClickListener
     }
 
 
-    private class ItemViewHold{
+    private class ItemViewHold {
         public Button id;
         public TextView info;
         public Button count;
@@ -194,10 +254,10 @@ public class RecordActivity extends BaseActivity implements View.OnClickListener
     public List<Item> getDataResourse(String[] info, int[] count) {
         List<Item> list;
         list = new ArrayList<>();
-        int min = Math.min(info.length,count.length);
+        int min = Math.min(info.length, count.length);
 
         int index = 0;
-        for (int i = 0; i <min; i++) {
+        for (int i = 0; i < min; i++) {
             index = i + 1;
             Item item = new Item("" + index, info[i], "" + count[i]);
             list.add(item);
@@ -206,7 +266,7 @@ public class RecordActivity extends BaseActivity implements View.OnClickListener
         return list;
     }
 
-//条目
+    //条目
     public class Item {
         private String Id;
         private String Info;
@@ -245,26 +305,25 @@ public class RecordActivity extends BaseActivity implements View.OnClickListener
     }
 
 
-    private Setting.Statistics statistics;
-//    初始化界面
+    //    初始化界面
     private void initSurface() {
 
         Intent intent = this.getIntent();
         int index = intent.getIntExtra(TORECORDACTIVITY, 0);//从index中取出是错题、收藏、还是删除
-        LogUtil.d(TAG,"----index---"+index);
+        LogUtil.d(TAG, "----index---" + index);
 //        Setting.Statistics statistics =
-                Setting.Statistics[] statisticss = Setting.Statistics.values();
+        Setting.Statistics[] statisticss = Setting.Statistics.values();
         statistics = statisticss[index];
-        switch (statistics){
+        switch (statistics) {
             case CollectionQuestion:
 
                 recordTitle.setText("我的收藏");
                 recordAllTitle.setText("所有我收藏的题");
                 recordReset.setText("清空我的收藏");
 
-                count[0] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.CollectionQuestion,Question.TYPE_SINGLE);
-                count[1] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.CollectionQuestion,Question.TYPE_MUTIL);
-                count[2] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.CollectionQuestion,Question.TYPE_CHECKING);
+                count[0] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.CollectionQuestion, Question.TYPE_SINGLE);
+                count[1] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.CollectionQuestion, Question.TYPE_MUTIL);
+                count[2] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.CollectionQuestion, Question.TYPE_CHECKING);
                 break;
             case NoDoQuestion:
                 recordTitle.setText("未做的题");
@@ -272,18 +331,18 @@ public class RecordActivity extends BaseActivity implements View.OnClickListener
 //                recordReset.setText("清空我的收藏");
                 recordReset.setVisibility(View.INVISIBLE);
 
-                count[0] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.NoDoQuestion,Question.TYPE_SINGLE);
-                count[1] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.NoDoQuestion,Question.TYPE_MUTIL);
-                count[2] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.NoDoQuestion,Question.TYPE_CHECKING);
+                count[0] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.NoDoQuestion, Question.TYPE_SINGLE);
+                count[1] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.NoDoQuestion, Question.TYPE_MUTIL);
+                count[2] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.NoDoQuestion, Question.TYPE_CHECKING);
                 break;
 
             case DeleteQuestion:
                 recordTitle.setText("排除的题");
                 recordAllTitle.setText("所有我删除的题");
                 recordReset.setText("恢复排除的题");
-                count[0] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.DeleteQuestion,Question.TYPE_SINGLE);
-                count[1] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.DeleteQuestion,Question.TYPE_MUTIL);
-                count[2] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.DeleteQuestion,Question.TYPE_CHECKING);
+                count[0] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.DeleteQuestion, Question.TYPE_SINGLE);
+                count[1] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.DeleteQuestion, Question.TYPE_MUTIL);
+                count[2] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.DeleteQuestion, Question.TYPE_CHECKING);
 
                 break;
 
@@ -292,9 +351,9 @@ public class RecordActivity extends BaseActivity implements View.OnClickListener
                 recordAllTitle.setText("所有我做错的题");
                 recordReset.setText("清空我的错题");
 
-                count[0] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.ErrorQuestion,Question.TYPE_SINGLE);
-                count[1] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.ErrorQuestion,Question.TYPE_MUTIL);
-                count[2] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.ErrorQuestion,Question.TYPE_CHECKING);
+                count[0] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.ErrorQuestion, Question.TYPE_SINGLE);
+                count[1] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.ErrorQuestion, Question.TYPE_MUTIL);
+                count[2] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.ErrorQuestion, Question.TYPE_CHECKING);
 
                 break;
 
@@ -303,9 +362,9 @@ public class RecordActivity extends BaseActivity implements View.OnClickListener
                 recordAllTitle.setText("所有我已做的题");
                 recordReset.setText("清空已做的题");
 
-                count[0] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.HaveDoQuestion,Question.TYPE_SINGLE);
-                count[1] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.HaveDoQuestion,Question.TYPE_MUTIL);
-                count[2] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.HaveDoQuestion,Question.TYPE_CHECKING);
+                count[0] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.HaveDoQuestion, Question.TYPE_SINGLE);
+                count[1] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.HaveDoQuestion, Question.TYPE_MUTIL);
+                count[2] = DBUtil.newInstance().countEveryStatistic(Setting.Statistics.HaveDoQuestion, Question.TYPE_CHECKING);
                 break;
 
 

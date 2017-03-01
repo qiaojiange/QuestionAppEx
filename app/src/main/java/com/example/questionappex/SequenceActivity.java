@@ -10,6 +10,7 @@ import android.widget.LinearLayout;
 import com.example.questionappex.setting.Setting;
 import com.example.questionappex.ui.BaseActivity;
 import com.example.questionappex.ui.MainActivity;
+import com.example.questionappex.util.DBUtil;
 import com.example.questionappex.util.LogUtil;
 
 public class SequenceActivity extends BaseActivity implements View.OnClickListener {
@@ -45,6 +46,14 @@ public class SequenceActivity extends BaseActivity implements View.OnClickListen
         bt_sequence_incomplete.setOnClickListener(this);
         bt_sequence_delete.setOnClickListener(this);
         bt_sequence_collect.setOnClickListener(this);
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+//        关闭数据库
+        DBUtil.newInstance().closeDatabase();
     }
 
     @Override
