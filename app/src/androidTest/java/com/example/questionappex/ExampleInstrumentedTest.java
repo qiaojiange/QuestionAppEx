@@ -74,7 +74,21 @@ public class ExampleInstrumentedTest {
 //        System.out.println(list.size());
 
 
-        List<String> list = DBUtil.newInstance().query("000005");
-        System.out.println(list.size());
+//        List<String> list = DBUtil.newInstance().query("000005");
+//        System.out.println(list.size());
+
+
+        boolean flag = DBUtil.newInstance().isCheckRange(1,3,"000864");
+         flag = DBUtil.newInstance().isCheckRange(1,3,"000374");
+         flag = DBUtil.newInstance().isCheckRange(1,3,"000377");
+         flag = DBUtil.newInstance().isCheckRange(1,3,"000541");
+         flag = DBUtil.newInstance().isCheckRange(1,3,"000542");
+         flag = DBUtil.newInstance().isCheckRange(1,3,"000543");
+
+        if(flag){
+            System.out.println("在范围内");
+        }else{
+            System.out.println("不在范围内");
+        }
     }
 }

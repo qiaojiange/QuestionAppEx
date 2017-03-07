@@ -23,9 +23,16 @@ public class ExampleUnitTest {
 //        Log.d(TAG, "useAppContext: count = "+dbUtil.getCount(1,1));
 //        String id = "000377";
 
-        String id = "000001";
-        String subString =id.substring( id.lastIndexOf("0")+1);
-        System.out.println(Integer.parseInt(subString));
+//        String id = "000001";
+//        String subString =id.substring( id.lastIndexOf("0")+1);
+//        System.out.println(Integer.parseInt(subString));
 //        Log.d(TAG, "useAppContext: -----"+Integer.parseInt(subString));
+
+        String str1 = "000864";
+        String str2 = "000542";
+        String str3 = "000374";
+        if(str1.compareTo(str2)>0){
+            System.out.println("大于");
+        }
     }
 }

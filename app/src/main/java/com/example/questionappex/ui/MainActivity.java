@@ -48,6 +48,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     private ListView listView;
     ChoiceAdapter adapter;
 
+//    是否是顺序界面或是设置界面跳转过来的，false，表示不是
+    boolean isSequence = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,7 +83,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         listView = (ListView) findViewById(R.id.lv_select_area);
 
         //先写成为1；
-        currentIndex = SPUtil.getString(Setting.CurrentIndex, "000001");
+        currentIndex = SPUtil.getString(Setting.CurrentIndex, "000000");
 
 //        SPUtil.putInt(Question.GRADE,Question.GRADE_1);
 
@@ -92,7 +95,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 //        如果bundle==null 说明是从顺序或者从设置界面跳转过来的
         if (bundle == null) {
             loadQuestion();
+            isSequence = true;
         } else {
+            isSequence = false;
             Setting.Statistics[] statisticses = Setting.Statistics.values();
             int index = bundle.getInt(RecordActivity.STATISTICS);
             int type = bundle.getInt(Question.TYPE);
@@ -185,7 +190,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         if (pool == null) {
             pool = new QuestionPool();
         }
-        pool.loadQuestion("");
+        //如果是顺序答题，就顺序加载上次没有加载过的问题。
+        if(currentIndex.equals("000000")){
+            pool.loadQuestion("");
+        }else{
+            LogUtil.d(TAG,"--------currentIndex---------"+currentIndex);
+            pool.loadQuestion(currentIndex);
+        }
 
 //        Question newQuestion = pool.next();
         Question newQuestion = pool.first();
@@ -211,9 +222,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         return false;
     }
 
+//返回按钮
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+//        super.onBackPressed();
+
+        //表示是顺序界面跳转过来的
+        if(isSequence){
+            SPUtil.putString(Setting.CurrentIndex,this.question.getTitleId());
+        }
         this.finish();
     }
 
@@ -286,7 +303,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
             case R.id.iv_return:
                 LogUtil.d(TAG, "onClick: return------");
-                this.finish();
+                onBackPressed();
+//                this.finish();
                 break;
 
             case R.id.iv_setting:

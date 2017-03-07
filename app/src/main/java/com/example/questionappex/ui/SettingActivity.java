@@ -145,7 +145,7 @@ public class SettingActivity extends BaseActivity implements SeekBar.OnSeekBarCh
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+//        super.onBackPressed();
         finishSettingAcitivity();
     }
 

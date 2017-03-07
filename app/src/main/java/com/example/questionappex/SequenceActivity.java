@@ -1,7 +1,10 @@
 package com.example.questionappex;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.nfc.Tag;
 import android.os.Binder;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -51,9 +54,37 @@ public class SequenceActivity extends BaseActivity implements View.OnClickListen
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-//        关闭数据库
-        DBUtil.newInstance().closeDatabase();
+        LogUtil.d(TAG,"--------onBackPressed------");
+       // super.onBackPressed();
+        AlertDialog.Builder builder = new AlertDialog.Builder(SequenceActivity.this).setMessage("确定退出吗？");
+        builder.setTitle("提醒");
+        builder.setCancelable(false);
+        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                LogUtil.d(TAG,"----确定退出----");
+                //        关闭数据库
+                DBUtil.newInstance().closeDatabase();
+                finish();
+            }
+        });
+        builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                LogUtil.d(TAG,"---取消退出--");
+            }
+        });
+        AlertDialog dialog = builder.create();
+        if(!this.isFinishing()){
+            LogUtil.d(TAG," --- this is not finish---");
+            dialog.show();
+        }else{
+            LogUtil.d(TAG,"---this is finish----");
+        }
+
+//        super.onBackPressed();
+
+
     }
 
     @Override
@@ -120,6 +151,6 @@ public class SequenceActivity extends BaseActivity implements View.OnClickListen
         }
 
         startActivity(intent);
-
+//        this.finish();
     }
 }
